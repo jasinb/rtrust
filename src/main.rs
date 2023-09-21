@@ -2,30 +2,22 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
-use vec3::unit_vector;
-
-use crate::vec3::{Vec3, dot};
-use crate::ray::Ray;
 
 mod vec3;
 mod ray;
+mod hittable;
+mod sphere;
 
-fn hit_sphere(center: Vec3, radius: f32, r: &Ray) -> f32 {
-    let oc = r.orig - center;
-    let a = r.dir.length_squared();
-    let half_b = dot(oc, r.dir);
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
+use hittable::Hittable;
 
-    return if discriminant >= 0.0 { (-half_b - discriminant.sqrt()) / a } else { -1.0 };
-}
+use crate::vec3::Vec3;
+use crate::ray::Ray;
+use crate::sphere::Sphere;
 
 fn ray_color(ray: &Ray) -> Vec3 {
-    let t = hit_sphere(Vec3(0.0, 0.0, -1.0), -0.5, ray);
-    
-    if t > 0.0 {
-        let n = unit_vector(ray.at(t) - Vec3(0.0, 0.0, -1.0));
-        return 0.5 * (n + Vec3(1.0, 1.0, 1.0));
+    let sphere = Sphere{ center: Vec3(0.0, 0.0, -1.0), radius: 0.5 };
+    if let Some(rec) = sphere.hit(ray, 0.001, 1000.0) {
+        return 0.5 * (rec.n + Vec3(1.0, 1.0, 1.0));
     }
 
     let unit_dir = vec3::unit_vector(ray.dir);
@@ -36,7 +28,7 @@ fn ray_color(ray: &Ray) -> Vec3 {
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let image_width = 800;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
     
     let focal_length = 1.0;
