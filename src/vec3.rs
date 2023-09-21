@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::Write;
+use std::fmt;
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
 
@@ -48,31 +47,36 @@ impl Sub<Self> for Vec3 {
     }
 }
 
-impl Vec3 {
-    pub fn write_color(self, f: &mut File) {
-        let Self(r, g, b)  = self * 255.999 as f32;
+// Implementing this trait this way only makes sense because we
+// know we're only going to print Vec3s into PPM files as colors
+impl fmt::Display for Vec3 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let Self(r, g, b)  = *self * 255.999 as f32;
         
         let r = r as i32;
         let g = g as i32;
         let b = b as i32;
 
-        write!(f, "{r} {g} {b}\n").unwrap();
+        write!(f, "{r} {g} {b}\n")
     }
+}
 
-    pub fn length_squared(&self) -> f32 {
+impl Vec3 {
+
+    pub fn length_squared(self) -> f32 {
         dot(self, self)
     }
 
-    pub fn length(&self) -> f32 {
+    pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
 }
 
-pub fn unit_vector(v: &Vec3) -> Vec3 {
-    *v / v.length()
+pub fn unit_vector(v: Vec3) -> Vec3 {
+    v / v.length()
 }
 
-pub fn dot(a: &Vec3, b: &Vec3) -> f32 {
+pub fn dot(a: Vec3, b: Vec3) -> f32 {
     a.0*b.0 + a.1*b.1 + a.2*b.2
 }
 
