@@ -28,7 +28,7 @@ impl Hittable for Sphere {
         }
     
         let p = r.at(root);
-        return Some(HitRecord::new(p, root, r, (p - self.center) / self.radius));
+        Some(HitRecord::new(p, root, r, (p - self.center) / self.radius))
     }
 }
 
