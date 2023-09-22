@@ -8,16 +8,15 @@ mod ray;
 mod hittable;
 mod sphere;
 
-use hittable::Hittable;
+use hittable::{Hittable, HittableList};
 
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 
-fn ray_color(ray: &Ray) -> Vec3 {
-    let sphere = Sphere{ center: Vec3(0.0, 0.0, -1.0), radius: 0.5 };
-    if let Some(rec) = sphere.hit(ray, 0.001, 1000.0) {
-        return 0.5 * (rec.n + Vec3(1.0, 1.0, 1.0));
+fn ray_color(ray: &Ray, world: &HittableList) -> Vec3 {
+    if let Some(rec) = world.hit(ray, 0.001, f32::INFINITY) {
+        return 0.5 * (rec.n + Vec3(1., 1., 1.));
     }
 
     let unit_dir = vec3::unit_vector(ray.dir);
@@ -28,7 +27,7 @@ fn ray_color(ray: &Ray) -> Vec3 {
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800;
+    let image_width = 400;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
     
     let focal_length = 1.0;
@@ -46,6 +45,10 @@ fn main() {
     let half_offs = 0.5 * offs;
     let pixel00_loc = viewport_upper_left +  half_offs;
     
+    let world = HittableList::new()
+        .add(Box::new(Sphere{ center: Vec3(0., 0., -1.), radius: 0.5 }))
+        .add(Box::new(Sphere{ center: Vec3(0., -100.5, -1.), radius: 100.0 }));
+
     let args: Vec<String> = env::args().collect();
     assert!(args.len() > 1);
     let mut f = File::create(&args[1]).unwrap();
@@ -57,7 +60,7 @@ fn main() {
             let ray_dir = pixel_center - camera_center;
             let ray = Ray{orig: camera_center, dir: ray_dir};
 
-            write!(&mut f, "{}", ray_color(&ray)).unwrap();
+            write!(&mut f, "{}", ray_color(&ray, &world)).unwrap();
         }
     }
 }
