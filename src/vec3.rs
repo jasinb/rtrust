@@ -70,6 +70,10 @@ impl Vec3 {
     pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
+
+    pub fn zero() -> Self {
+        Self(0., 0., 0.)
+    }
 }
 
 pub fn unit_vector(v: Vec3) -> Vec3 {

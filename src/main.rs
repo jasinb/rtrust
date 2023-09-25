@@ -2,49 +2,25 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
-
 mod vec3;
 mod ray;
 mod hittable;
 mod sphere;
+mod interval;
+mod camera;
 
-use hittable::{Hittable, HittableList};
-
-use crate::vec3::Vec3;
-use crate::ray::Ray;
-use crate::sphere::Sphere;
-
-fn ray_color(ray: &Ray, world: &HittableList) -> Vec3 {
-    if let Some(rec) = world.hit(ray, 0.001, f32::INFINITY) {
-        return 0.5 * (rec.n + Vec3(1., 1., 1.));
-    }
-
-    let unit_dir = vec3::unit_vector(ray.dir);
-    let a = 0.5 * unit_dir.1 + 1.0;
-    (1.0 - a) * Vec3(1.0, 1.0, 1.0) + a * Vec3(0.5, 0.7, 1.0)
-}
-
+use hittable::HittableList;
+use vec3::Vec3;
+use sphere::Sphere;
+use camera::Camera;
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let image_width = 800;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
-    
-    let focal_length = 1.0;
-    let viewport_height = 2.0;
-    let viewport_width = viewport_height * (image_width as f32) / image_height as f32;
-    let camera_center = Vec3(0.0, 0.0, 0.0);
-    let viewport_u = Vec3(viewport_width, 0.0, 0.0);
-    let viewport_v = Vec3(0.0, -viewport_height, 0.0);
 
-    let pixel_delta_u = viewport_u / image_width as f32;
-    let pixel_delta_v = viewport_v / image_height as f32;
+    let camera = Camera::new(image_width, image_height, Vec3::zero());
 
-    let viewport_upper_left = camera_center - Vec3(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
-    let offs = pixel_delta_u + pixel_delta_v;
-    let half_offs = 0.5 * offs;
-    let pixel00_loc = viewport_upper_left +  half_offs;
-    
     let world = HittableList::new()
         .add(Box::new(Sphere{ center: Vec3(0., 0., -1.), radius: 0.5 }))
         .add(Box::new(Sphere{ center: Vec3(0., -100.5, -1.), radius: 100.0 }));
@@ -54,13 +30,5 @@ fn main() {
     let mut f = File::create(&args[1]).unwrap();
 
     write!(&mut f, "P3\n{image_width} {image_height}\n255\n").unwrap();
-    for j in 0..image_height {
-        for i in 0..image_width {
-            let pixel_center = pixel00_loc + ((i as f32) * pixel_delta_u) + ((j as f32) * pixel_delta_v);
-            let ray_dir = pixel_center - camera_center;
-            let ray = Ray{orig: camera_center, dir: ray_dir};
-
-            write!(&mut f, "{}", ray_color(&ray, &world)).unwrap();
-        }
-    }
+    camera.render(&world, &mut f);
 }
