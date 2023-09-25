@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
+use rand::Rng;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -66,24 +67,42 @@ impl Vec3 {
     }
 
     pub fn length_squared(self) -> f32 {
-        dot(self, self)
+        Self::dot(self, self)
     }
 
     pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
 
+    pub fn unit(self) -> Vec3 {
+        self / self.length()
+    }
+
     pub fn zero() -> Self {
         Self(0., 0., 0.)
     }
-}
 
-pub fn unit_vector(v: Vec3) -> Vec3 {
-    v / v.length()
-}
+    pub fn random_in_unit_sphere<R: Rng>(rng: &mut R) -> Self {
+        loop {
+            let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
+            if v.length() < 1.0 {
+                return v;
+            }
+        }
+    }
 
-pub fn dot(a: Vec3, b: Vec3) -> f32 {
-    a.0*b.0 + a.1*b.1 + a.2*b.2
+    pub fn random_unit_vector<R: Rng>(rng: &mut R) -> Self {
+        Self::random_in_unit_sphere(rng).unit()
+    }
+
+    pub fn random_on_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Self {
+        let on_unit_sphere = Self::random_unit_vector(rng);
+        if Self::dot(on_unit_sphere, normal) > 0.0 { on_unit_sphere } else { -on_unit_sphere }
+    }
+
+    pub fn dot(a: Vec3, b: Vec3) -> f32 {
+        a.0*b.0 + a.1*b.1 + a.2*b.2
+    }
 }
 
 

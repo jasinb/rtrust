@@ -19,6 +19,7 @@ fn main() {
     let image_width = 400;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     let camera = Camera::new(image_width, image_height, samples_per_pixel, Vec3::zero());
 
@@ -31,5 +32,5 @@ fn main() {
     let mut f = File::create(&args[1]).unwrap();
 
     write!(&mut f, "P3\n{image_width} {image_height}\n255\n").unwrap();
-    camera.render(&world, &mut f);
+    camera.render(&world, &mut f, max_depth);
 }

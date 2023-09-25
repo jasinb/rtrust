@@ -1,4 +1,4 @@
-use crate::vec3::*;
+use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::interval::Interval;
 
@@ -11,7 +11,7 @@ pub struct HitRecord {
 
 impl HitRecord {
     pub fn new(p: Vec3, t: f32, r: &Ray, outward_normal: Vec3) -> HitRecord {
-        let front_face = dot(r.dir, outward_normal) < 0.0;
+        let front_face = Vec3::dot(r.dir, outward_normal) < 0.0;
         let n = if front_face { outward_normal } else { -outward_normal };
         HitRecord{ p, n, t, front_face }
     }
