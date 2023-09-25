@@ -49,7 +49,7 @@ impl Camera {
         }
 
         if let Some(rec) = world.hit(ray, Interval::new(0.001, f32::INFINITY)) {
-            let direction = Vec3::random_on_hemisphere(rng, rec.n);
+            let direction = rec.n + Vec3::random_unit_vector(rng);
             return 0.5 * self.ray_color(&Ray{ orig: rec.p, dir: direction}, world, rng, depth - 1);
         }
 
