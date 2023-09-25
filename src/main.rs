@@ -16,10 +16,11 @@ use camera::Camera;
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800;
+    let image_width = 400;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
+    let samples_per_pixel = 100;
 
-    let camera = Camera::new(image_width, image_height, Vec3::zero());
+    let camera = Camera::new(image_width, image_height, samples_per_pixel, Vec3::zero());
 
     let world = HittableList::new()
         .add(Box::new(Sphere{ center: Vec3(0., 0., -1.), radius: 0.5 }))

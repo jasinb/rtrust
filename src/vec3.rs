@@ -1,5 +1,6 @@
-use std::fmt;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::fs::File;
+use std::io::Write;
+use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
 
 
 #[derive(Debug, Copy, Clone)]
@@ -33,6 +34,12 @@ impl Add<Self> for Vec3 {
     }
 }
 
+impl AddAssign<Self> for Vec3 {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
 impl Neg for Vec3 {
     type Output = Self;
     fn neg(self) -> Self {
@@ -47,21 +54,16 @@ impl Sub<Self> for Vec3 {
     }
 }
 
-// Implementing this trait this way only makes sense because we
-// know we're only going to print Vec3s into PPM files as colors
-impl fmt::Display for Vec3 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let Self(r, g, b)  = *self * 255.999 as f32;
-        
-        let r = r as i32;
-        let g = g as i32;
-        let b = b as i32;
-
-        write!(f, "{r} {g} {b}\n")
-    }
-}
-
 impl Vec3 {
+    pub fn write_color(&self, f: &mut File, samples_per_pixel: i32)  {
+        let Self(r, g, b)  = *self / samples_per_pixel as f32;
+        
+        let r = (r.clamp(0., 0.999) * 256.0) as i32;
+        let g = (g.clamp(0., 0.999) * 256.0) as i32;
+        let b = (b.clamp(0., 0.999) * 256.0) as i32;
+
+        write!(f, "{r} {g} {b}\n").unwrap();
+    }
 
     pub fn length_squared(self) -> f32 {
         dot(self, self)
