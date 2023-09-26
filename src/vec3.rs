@@ -56,12 +56,17 @@ impl Sub<Self> for Vec3 {
 }
 
 impl Vec3 {
+
+    fn linear_to_gamma(linear: f32) -> f32 {
+        f32::sqrt(linear)
+    }
+
     pub fn write_color(&self, f: &mut File, samples_per_pixel: i32)  {
         let Self(r, g, b)  = *self / samples_per_pixel as f32;
         
-        let r = (r.clamp(0., 0.999) * 256.0) as i32;
-        let g = (g.clamp(0., 0.999) * 256.0) as i32;
-        let b = (b.clamp(0., 0.999) * 256.0) as i32;
+        let r = (Self::linear_to_gamma(r).clamp(0., 0.999) * 256.0) as i32;
+        let g = (Self::linear_to_gamma(g).clamp(0., 0.999) * 256.0) as i32;
+        let b = (Self::linear_to_gamma(b).clamp(0., 0.999) * 256.0) as i32;
 
         write!(f, "{r} {g} {b}\n").unwrap();
     }
