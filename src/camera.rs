@@ -43,14 +43,16 @@ impl Camera {
         }
     }
 
-    fn ray_color<R: Rng>(&self, ray: &Ray, world: &dyn Hittable, rng: &mut R, depth: i32) -> Vec3 {
+    fn ray_color(&self, ray: &Ray, world: &dyn Hittable, depth: i32) -> Vec3 {
         if depth <= 0 {
             return Vec3::zero();
         }
 
         if let Some(rec) = world.hit(ray, Interval::new(0.001, f32::INFINITY)) {
-            let direction = rec.n + Vec3::random_unit_vector(rng);
-            return 0.5 * self.ray_color(&Ray{ orig: rec.p, dir: direction}, world, rng, depth - 1);
+            if let Some((attenuation, scattered)) = rec.material.scatter(ray, &rec) {
+                return attenuation * self.ray_color(&scattered, world, depth - 1);
+            }
+            return Vec3::zero();
         }
 
         let unit_dir = Vec3::unit(ray.dir);
@@ -80,7 +82,7 @@ impl Camera {
                 let mut color = Vec3::zero();
                 for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(i, j, &mut rng);
-                    color += self.ray_color(&ray, world, &mut rng, max_depth);
+                    color += self.ray_color(&ray, world, max_depth);
                 }
                 color.write_color(f, self.samples_per_pixel);
             }

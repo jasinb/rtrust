@@ -14,6 +14,13 @@ impl Mul<f32> for Vec3 {
     }
 }
 
+impl Mul<Self> for Vec3 {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        Self(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
+    }
+}
+
 impl Mul<Vec3> for f32 {
     type Output = Vec3;
     fn mul(self, rhs: Vec3) -> Vec3 {
@@ -87,7 +94,13 @@ impl Vec3 {
         Self(0., 0., 0.)
     }
 
-    pub fn random_in_unit_sphere<R: Rng>(rng: &mut R) -> Self {
+    pub fn near_zero(self) -> bool {
+        const S: f32 = 1e-8;
+        f32::abs(self.0) < S && f32::abs(self.0) < S && f32::abs(self.0) < S
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        let mut rng = rand::thread_rng();
         loop {
             let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
             if v.length() < 1.0 {
@@ -96,12 +109,12 @@ impl Vec3 {
         }
     }
 
-    pub fn random_unit_vector<R: Rng>(rng: &mut R) -> Self {
-        Self::random_in_unit_sphere(rng).unit()
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit()
     }
 
-    pub fn random_on_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Self {
-        let on_unit_sphere = Self::random_unit_vector(rng);
+    pub fn random_on_hemisphere(normal: Vec3) -> Self {
+        let on_unit_sphere = Self::random_unit_vector();
         if Self::dot(on_unit_sphere, normal) > 0.0 { on_unit_sphere } else { -on_unit_sphere }
     }
 
