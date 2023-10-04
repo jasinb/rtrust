@@ -21,16 +21,20 @@ fn main() {
     let image_width = 400;
     let image_height = ((image_width as f32) / aspect_ratio) as i32;
     let samples_per_pixel = 100;
-    let max_depth = 50;
+    let max_depth = 10;
 
     let camera = Camera::new(image_width, image_height, samples_per_pixel, Vec3::zero());
 
-    let mat_a = Lambertian::new(Vec3(1.0, 0.4, 0.1));
-    let mat_b = Lambertian::new(Vec3(0.3, 0.7, 1.0));
+    let mat_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Vec3(0.7, 0.3, 0.3));
+    let mat_left = Metal::new(Vec3(0.8, 0.8, 0.8), 0.3);
+    let mat_right = Metal::new(Vec3(0.8, 0.6, 0.2), 1.0);
 
     let world = HittableList::new()
-        .add(Box::new(Sphere{ center: Vec3(0., 0., -1.), radius: 0.5, material: &mat_a }))
-        .add(Box::new(Sphere{ center: Vec3(0., -100.5, -1.), radius: 100.0, material: &mat_b }));
+        .add(Box::new(Sphere{ center: Vec3( 0., -100.5,  -1.), radius: 100.0, material: &mat_ground }))
+        .add(Box::new(Sphere{ center: Vec3( 0.,      0., -1.), radius:   0.5, material: &mat_center }))
+        .add(Box::new(Sphere{ center: Vec3(-1.,      0., -1.), radius:   0.5, material: &mat_left }))
+        .add(Box::new(Sphere{ center: Vec3( 1.,      0., -1.), radius:   0.5, material: &mat_right }));
 
     let args: Vec<String> = env::args().collect();
     assert!(args.len() > 1);

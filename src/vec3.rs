@@ -118,6 +118,10 @@ impl Vec3 {
         if Self::dot(on_unit_sphere, normal) > 0.0 { on_unit_sphere } else { -on_unit_sphere }
     }
 
+    pub fn reflect(v: Self, n: Self) -> Self {
+        v - 2.0 * Self::dot(v, n) * n
+    }
+
     pub fn dot(a: Vec3, b: Vec3) -> f32 {
         a.0*b.0 + a.1*b.1 + a.2*b.2
     }

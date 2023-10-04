@@ -11,8 +11,8 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Lambertian {
-        Lambertian{ albedo }
+    pub fn new(albedo: Vec3) -> Self {
+        Self{ albedo }
     }
 }
 
@@ -23,6 +23,26 @@ impl Material for Lambertian {
             scatter_direction = rec.n;
         }
         let scattered = Ray{ orig: rec.p, dir: scatter_direction };
+        let attenuation = self.albedo;
+        Some((attenuation, scattered))
+    }
+}
+
+pub struct Metal {
+    albedo: Vec3,
+    fuzz: f32,
+}
+
+impl Metal {
+    pub fn new(albedo: Vec3, fuzz: f32) -> Self {
+        Self{ albedo, fuzz }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
+        let reflected = Vec3::reflect(ray.dir.unit(), rec.n);
+        let scattered = Ray{ orig: rec.p, dir: reflected + self.fuzz * Vec3::random_unit_vector() };
         let attenuation = self.albedo;
         Some((attenuation, scattered))
     }
