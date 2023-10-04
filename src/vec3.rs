@@ -94,6 +94,10 @@ impl Vec3 {
         Self(0., 0., 0.)
     }
 
+    pub fn one() -> Self {
+        Self(1., 1., 1.)
+    }
+
     pub fn near_zero(self) -> bool {
         const S: f32 = 1e-8;
         f32::abs(self.0) < S && f32::abs(self.0) < S && f32::abs(self.0) < S
@@ -120,6 +124,13 @@ impl Vec3 {
 
     pub fn reflect(v: Self, n: Self) -> Self {
         v - 2.0 * Self::dot(v, n) * n
+    }
+
+    pub fn refract(uv: Self, n: Self, etai_over_etat: f32) -> Self {
+        let cos_theta = Self::dot(-uv, n).min(1.0);
+        let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+        let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
+        r_out_perp + r_out_parallel
     }
 
     pub fn dot(a: Vec3, b: Vec3) -> f32 {

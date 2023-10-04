@@ -57,7 +57,7 @@ impl Camera {
 
         let unit_dir = Vec3::unit(ray.dir);
         let a = 0.5 * unit_dir.1 + 1.0;
-        (1.0 - a) * Vec3(1.0, 1.0, 1.0) + a * Vec3(0.5, 0.7, 1.0)
+        (1.0 - a) * Vec3::one() + a * Vec3(0.5, 0.7, 1.0)
     }
 
     fn pixel_sample_square<R: Rng>(&self, rng: &mut R) -> Vec3 {
