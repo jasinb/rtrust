@@ -34,6 +34,7 @@ fn main() {
         .add(Box::new(Sphere{ center: Vec3( 0., -100.5,  -1.), radius: 100.0, material: &mat_ground }))
         .add(Box::new(Sphere{ center: Vec3( 0.,      0., -1.), radius:   0.5, material: &mat_center }))
         .add(Box::new(Sphere{ center: Vec3(-1.,      0., -1.), radius:   0.5, material: &mat_left }))
+        .add(Box::new(Sphere{ center: Vec3(-1.,      0., -1.), radius:  -0.4, material: &mat_left }))
         .add(Box::new(Sphere{ center: Vec3( 1.,      0., -1.), radius:   0.5, material: &mat_right }));
 
     let args: Vec<String> = env::args().collect();
