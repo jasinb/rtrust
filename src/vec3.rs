@@ -102,6 +102,10 @@ impl Vec3 {
         f32::abs(self.0) < S && f32::abs(self.0) < S && f32::abs(self.0) < S
     }
 
+    pub fn random(min: f32, max: f32) -> Self {
+        Self(random_float(min, max), random_float(min, max), random_float(min, max))
+    }
+
     pub fn random_in_unit_disk() -> Self {
         loop {
             let v = Self(random_float(-1.0, 1.0), random_float(-1.0, 1.0), 0.0);
@@ -114,7 +118,7 @@ impl Vec3 {
 
     pub fn random_in_unit_sphere() -> Self {
         loop {
-            let v = Self(random_float(-1.0, 1.0), random_float(-1.0, 1.0), random_float(-1.0, 1.0));
+            let v = Self::random(-1.0, 1.0);
             assert!(v.0 >= -1.0 && v.0 < 1.0);
             assert!(v.1 >= -1.0 && v.1 < 1.0);
             assert!(v.2 >= -1.0 && v.2 < 1.0);

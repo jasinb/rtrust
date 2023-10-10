@@ -32,7 +32,7 @@ impl<'a> HittableList<'a> {
     pub fn new() -> Self {
         Self { hittables: Default::default() }
     }
-    pub fn add(mut self, hittable: Box<dyn Hittable + 'a>) -> Self {
+    pub fn add(&mut self, hittable: Box<dyn Hittable + 'a>) -> &Self {
         self.hittables.push(hittable);
         self
     }

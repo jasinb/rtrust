@@ -7,7 +7,7 @@ use crate::material::Material;
 pub struct Sphere<'a> {
     pub center: Vec3,
     pub radius: f32,
-    pub material: &'a dyn Material,
+    pub material: Box<dyn Material + 'a>,
 }
 
 impl<'a> Hittable for Sphere<'a> {
@@ -31,7 +31,7 @@ impl<'a> Hittable for Sphere<'a> {
         }
     
         let p = ray.at(root);
-        Some(HitRecord::new(p, root, ray, (p - self.center) / self.radius, self.material))
+        Some(HitRecord::new(p, root, ray, (p - self.center) / self.radius, &(*self.material)))
     }
 }
 
