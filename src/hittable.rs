@@ -13,7 +13,7 @@ pub struct HitRecord<'a> {
 
 impl<'a> HitRecord<'a> {
     pub fn new(p: Vec3, t: f32, r: &Ray, outward_normal: Vec3, material: &'a dyn Material) -> HitRecord<'a> {
-        let front_face = Vec3::dot(r.dir, outward_normal) < 0.0;
+        let front_face = r.dir.dot(outward_normal) < 0.0;
         let n = if front_face { outward_normal } else { -outward_normal };
         HitRecord{ p, n, t, front_face, material }
     }

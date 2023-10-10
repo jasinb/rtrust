@@ -14,21 +14,32 @@ pub struct Camera {
     pixel00_loc: Vec3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    defocus_angle: f32,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
 }
 
 impl Camera {
-    pub fn new(image_width: i32, image_height: i32, samples_per_pixel: i32, lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: f32) -> Self {
+    pub fn new(
+            image_width: i32,
+            image_height: i32,
+            samples_per_pixel: i32,
+            lookfrom: Vec3,
+            lookat: Vec3,
+            vup: Vec3,
+            vfov: f32,
+            defocus_angle: f32,
+            focus_dist: f32) -> Self {
         let center = lookfrom;
-        let focal_length = (lookfrom - lookat).length();
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
 
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * focus_dist;
         let viewport_width = viewport_height * (image_width as f32) / image_height as f32;
         
         let w = (lookfrom - lookat).unit();
-        let u = Vec3::cross(vup, w).unit();
-        let v = Vec3::cross(w, u);
+        let u = vup.cross(w).unit();
+        let v = w.cross(u);
 
         let viewport_u = viewport_width * u;
         let viewport_v = viewport_height * -v;
@@ -36,10 +47,14 @@ impl Camera {
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
     
-        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = center - (focus_dist * w) - viewport_u / 2.0 - viewport_v / 2.0;
         let offs = pixel_delta_u + pixel_delta_v;
         let half_offs = 0.5 * offs;
         let pixel00_loc = viewport_upper_left +  half_offs;
+
+        let defocus_radius = focus_dist * (defocus_angle / 2.0).to_radians().tan();
+        let defocus_disk_u = u * defocus_radius;
+        let defocus_disk_v = v * defocus_radius;
         
         Self {
             image_width,
@@ -49,6 +64,9 @@ impl Camera {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
+            defocus_angle,
+            defocus_disk_u,
+            defocus_disk_v,
         }
     }
 
@@ -75,11 +93,19 @@ impl Camera {
 
         (px * self.pixel_delta_u) + (py * self.pixel_delta_v)
     }
+
+    fn defocus_disk_sample(&self) -> Vec3 {
+        let p = Vec3::random_in_unit_disk();
+        self.center + (p.0 * self.defocus_disk_u) + (p.1 * self.defocus_disk_v)
+    }
+
     fn get_ray<R: Rng>(&self, i: i32, j: i32, rng: &mut R) -> Ray {
         let pixel_center = self.pixel00_loc + ((i as f32) * self.pixel_delta_u) + ((j as f32) * self.pixel_delta_v);
         let pixel_sample = pixel_center + self.pixel_sample_square(rng);
-        let ray_dir = pixel_sample - self.center;
-        Ray { orig: self.center, dir: ray_dir }
+        
+        let ray_origin = if self.defocus_angle <= 0.0 { self.center } else { self.defocus_disk_sample() };
+        let ray_dir = pixel_sample - ray_origin;
+        Ray { orig: ray_origin, dir: ray_dir }
     }
 
     pub fn render(&self, world: &dyn Hittable, f: &mut File, max_depth: i32) {

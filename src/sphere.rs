@@ -14,7 +14,7 @@ impl<'a> Hittable for Sphere<'a> {
     fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let oc = ray.orig - self.center;
         let a = ray.dir.length_squared();
-        let half_b = Vec3::dot(oc, ray.dir);
+        let half_b = oc.dot(ray.dir);
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {

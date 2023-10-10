@@ -30,7 +30,9 @@ fn main() {
         Vec3(-2.0, 2.0, 1.0),
         Vec3(0.0, 0.0, -1.0),
         Vec3(0.0, 1.0, 0.0),
-        20.0);
+        20.0,
+        10.0,
+        3.4);
 
     let mat_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
     let mat_center = Lambertian::new(Vec3(0.1, 0.2, 0.5));

@@ -62,24 +62,23 @@ impl Sub<Self> for Vec3 {
     }
 }
 
+fn linear_to_gamma(linear: f32) -> f32 {
+    f32::sqrt(linear)
+}
+
 impl Vec3 {
-
-    fn linear_to_gamma(linear: f32) -> f32 {
-        f32::sqrt(linear)
-    }
-
-    pub fn write_color(&self, f: &mut File, samples_per_pixel: i32)  {
-        let Self(r, g, b)  = *self / samples_per_pixel as f32;
+    pub fn write_color(self, f: &mut File, samples_per_pixel: i32)  {
+        let Self(r, g, b)  = self / samples_per_pixel as f32;
         
-        let r = (Self::linear_to_gamma(r).clamp(0., 0.999) * 256.0) as i32;
-        let g = (Self::linear_to_gamma(g).clamp(0., 0.999) * 256.0) as i32;
-        let b = (Self::linear_to_gamma(b).clamp(0., 0.999) * 256.0) as i32;
+        let r = (linear_to_gamma(r).clamp(0., 0.999) * 256.0) as i32;
+        let g = (linear_to_gamma(g).clamp(0., 0.999) * 256.0) as i32;
+        let b = (linear_to_gamma(b).clamp(0., 0.999) * 256.0) as i32;
 
         write!(f, "{r} {g} {b}\n").unwrap();
     }
 
     pub fn length_squared(self) -> f32 {
-        Self::dot(self, self)
+        self.dot(self)
     }
 
     pub fn length(self) -> f32 {
@@ -103,11 +102,22 @@ impl Vec3 {
         f32::abs(self.0) < S && f32::abs(self.0) < S && f32::abs(self.0) < S
     }
 
+    pub fn random_in_unit_disk() -> Self {
+        let mut rng = rand::thread_rng();
+        loop {
+            let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), 0.0);
+            if v.length_squared() < 1.0 {
+                return v;
+            }
+
+        }
+    }
+
     pub fn random_in_unit_sphere() -> Self {
         let mut rng = rand::thread_rng();
         loop {
             let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
-            if v.length() < 1.0 {
+            if v.length_squared() < 1.0 {
                 return v;
             }
         }
@@ -119,29 +129,29 @@ impl Vec3 {
 
     pub fn random_on_hemisphere(normal: Vec3) -> Self {
         let on_unit_sphere = Self::random_unit_vector();
-        if Self::dot(on_unit_sphere, normal) > 0.0 { on_unit_sphere } else { -on_unit_sphere }
+        if on_unit_sphere.dot(normal) > 0.0 { on_unit_sphere } else { -on_unit_sphere }
     }
 
-    pub fn reflect(v: Self, n: Self) -> Self {
-        v - 2.0 * Self::dot(v, n) * n
+    pub fn reflect(self, n: Self) -> Self {
+        self - 2.0 * self.dot(n) * n
     }
 
-    pub fn refract(uv: Self, n: Self, etai_over_etat: f32) -> Self {
-        let cos_theta = Self::dot(-uv, n).min(1.0);
-        let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    pub fn refract(self, n: Self, etai_over_etat: f32) -> Self {
+        let cos_theta = (-self).dot(n).min(1.0);
+        let r_out_perp = etai_over_etat * (self + cos_theta * n);
         let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
         r_out_perp + r_out_parallel
     }
 
-    pub fn dot(a: Vec3, b: Vec3) -> f32 {
-        a.0*b.0 + a.1*b.1 + a.2*b.2
+    pub fn dot(self, b: Vec3) -> f32 {
+        self.0*b.0 + self.1*b.1 + self.2*b.2
     }
 
-    pub fn cross(u: Self, v: Self) -> Self {
+    pub fn cross(self, v: Self) -> Self {
         Self(
-            u.1 * v.2 - u.2 * v.1,
-            u.2 * v.0 - u.0 * v.2,
-            u.0 * v.1 - u.1 * v.0)
+            self.1 * v.2 - self.2 * v.1,
+            self.2 * v.0 - self.0 * v.2,
+            self.0 * v.1 - self.1 * v.0)
     }
 }
 

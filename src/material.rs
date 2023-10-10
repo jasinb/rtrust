@@ -42,7 +42,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
-        let reflected = Vec3::reflect(ray.dir.unit(), rec.n);
+        let reflected = ray.dir.unit().reflect(rec.n);
         let scattered = Ray{ orig: rec.p, dir: reflected + self.fuzz * Vec3::random_unit_vector() };
         let attenuation = self.albedo;
         Some((attenuation, scattered))
@@ -64,16 +64,16 @@ impl Material for Dielectric {
         let refraction_ratio = if rec.front_face { 1. / self.ir } else { self.ir };
 
         let unit_direction = ray.dir.unit();
-        let cos_theta = Vec3::dot(-unit_direction, rec.n).min(1.0);
+        let cos_theta = (-unit_direction).dot(rec.n).min(1.0);
         let sin_theta = (1.0 - cos_theta*cos_theta).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let rnd = rand::thread_rng().gen::<f32>();
         let direction = if cannot_refract || reflectance(cos_theta, refraction_ratio) > rnd {
-            Vec3::reflect(unit_direction, rec.n)
+            unit_direction.reflect(rec.n)
         }
         else {
-            Vec3::refract(unit_direction, rec.n, refraction_ratio)
+            unit_direction.refract(rec.n, refraction_ratio)
         };
         
         let attenuation = Vec3::one();
