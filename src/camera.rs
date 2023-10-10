@@ -17,17 +17,26 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(image_width: i32, image_height: i32, samples_per_pixel: i32, center: Vec3) -> Self {
-        let focal_length = 1.0;
-        let viewport_height = 2.0;
+    pub fn new(image_width: i32, image_height: i32, samples_per_pixel: i32, lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: f32) -> Self {
+        let center = lookfrom;
+        let focal_length = (lookfrom - lookat).length();
+        let theta = vfov.to_radians();
+        let h = (theta / 2.0).tan();
+
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (image_width as f32) / image_height as f32;
-        let viewport_u = Vec3(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3(0.0, -viewport_height, 0.0);
+        
+        let w = (lookfrom - lookat).unit();
+        let u = Vec3::cross(vup, w).unit();
+        let v = Vec3::cross(w, u);
+
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * -v;
     
         let pixel_delta_u = viewport_u / image_width as f32;
         let pixel_delta_v = viewport_v / image_height as f32;
     
-        let viewport_upper_left = center - Vec3(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = center - (focal_length * w) - viewport_u / 2.0 - viewport_v / 2.0;
         let offs = pixel_delta_u + pixel_delta_v;
         let half_offs = 0.5 * offs;
         let pixel00_loc = viewport_upper_left +  half_offs;

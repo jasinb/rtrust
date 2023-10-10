@@ -23,7 +23,14 @@ fn main() {
     let samples_per_pixel = 100;
     let max_depth = 10;
 
-    let camera = Camera::new(image_width, image_height, samples_per_pixel, Vec3::zero());
+    let camera = Camera::new(
+        image_width,
+        image_height, 
+        samples_per_pixel,
+        Vec3(-2.0, 2.0, 1.0),
+        Vec3(0.0, 0.0, -1.0),
+        Vec3(0.0, 1.0, 0.0),
+        20.0);
 
     let mat_ground = Lambertian::new(Vec3(0.8, 0.8, 0.0));
     let mat_center = Lambertian::new(Vec3(0.1, 0.2, 0.5));
@@ -36,7 +43,7 @@ fn main() {
         .add(Box::new(Sphere{ center: Vec3(-1.,      0., -1.), radius:   0.5, material: &mat_left }))
         .add(Box::new(Sphere{ center: Vec3(-1.,      0., -1.), radius:  -0.4, material: &mat_left }))
         .add(Box::new(Sphere{ center: Vec3( 1.,      0., -1.), radius:   0.5, material: &mat_right }));
-
+ 
     let args: Vec<String> = env::args().collect();
     assert!(args.len() > 1);
     let mut f = File::create(&args[1]).unwrap();
