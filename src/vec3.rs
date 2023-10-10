@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
-use rand::Rng;
+use crate::random::*;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -103,9 +103,8 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_disk() -> Self {
-        let mut rng = rand::thread_rng();
         loop {
-            let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), 0.0);
+            let v = Self(random_float(-1.0, 1.0), random_float(-1.0, 1.0), 0.0);
             if v.length_squared() < 1.0 {
                 return v;
             }
@@ -114,9 +113,11 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere() -> Self {
-        let mut rng = rand::thread_rng();
         loop {
-            let v = Self(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>());
+            let v = Self(random_float(-1.0, 1.0), random_float(-1.0, 1.0), random_float(-1.0, 1.0));
+            assert!(v.0 >= -1.0 && v.0 < 1.0);
+            assert!(v.1 >= -1.0 && v.1 < 1.0);
+            assert!(v.2 >= -1.0 && v.2 < 1.0);
             if v.length_squared() < 1.0 {
                 return v;
             }

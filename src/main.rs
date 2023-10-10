@@ -2,6 +2,7 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
+mod random;
 mod vec3;
 mod ray;
 mod hittable;

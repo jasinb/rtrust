@@ -1,10 +1,10 @@
 use std::fs::File;
-use rand::Rng;
 
 use crate::vec3::*;
 use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::hittable::Hittable;
+use crate::random::*;
 
 pub struct Camera {
     image_width: i32,
@@ -87,9 +87,9 @@ impl Camera {
         (1.0 - a) * Vec3::one() + a * Vec3(0.5, 0.7, 1.0)
     }
 
-    fn pixel_sample_square<R: Rng>(&self, rng: &mut R) -> Vec3 {
-        let px = -0.5 + rng.gen::<f32>();
-        let py = -0.5 + rng.gen::<f32>();
+    fn pixel_sample_square(&self) -> Vec3 {
+        let px = random_float(-0.5, 0.5);
+        let py = random_float(-0.5, 0.5);
 
         (px * self.pixel_delta_u) + (py * self.pixel_delta_v)
     }
@@ -99,9 +99,9 @@ impl Camera {
         self.center + (p.0 * self.defocus_disk_u) + (p.1 * self.defocus_disk_v)
     }
 
-    fn get_ray<R: Rng>(&self, i: i32, j: i32, rng: &mut R) -> Ray {
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
         let pixel_center = self.pixel00_loc + ((i as f32) * self.pixel_delta_u) + ((j as f32) * self.pixel_delta_v);
-        let pixel_sample = pixel_center + self.pixel_sample_square(rng);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
         
         let ray_origin = if self.defocus_angle <= 0.0 { self.center } else { self.defocus_disk_sample() };
         let ray_dir = pixel_sample - ray_origin;
@@ -109,14 +109,12 @@ impl Camera {
     }
 
     pub fn render(&self, world: &dyn Hittable, f: &mut File, max_depth: i32) {
-        let mut rng = rand::thread_rng();
-
         for j in 0..self.image_height {
             for i in 0..self.image_width {
                 
                 let mut color = Vec3::zero();
                 for _ in 0..self.samples_per_pixel {
-                    let ray = self.get_ray(i, j, &mut rng);
+                    let ray = self.get_ray(i, j);
                     color += self.ray_color(&ray, world, max_depth);
                 }
                 color.write_color(f, self.samples_per_pixel);
